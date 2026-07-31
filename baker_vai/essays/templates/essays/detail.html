@@ -3,282 +3,144 @@
 {% block title %}{{ essay.title }} — Baker Vai{% endblock %}
 
 {% block extra_head %}
+<!-- Reading progress bar sits just below the sticky nav (top-16 = 64px) -->
 <style>
-    /* ── PROGRESS BAR ── */
     #read-progress {
         position: fixed;
         top: 64px;
         left: 0;
         height: 3px;
         width: 0%;
-        background: var(--accent);
+        background-color: #b45309; /* amber-700 */
         z-index: 300;
         transition: width 0.1s linear;
     }
+
+    /* Rich-text body — CKEditor HTML needs real CSS prose rules */
+    .essay-prose { font-family: 'Lora', Georgia, serif; }
+    .essay-prose p                { margin-bottom: 1.5rem; }
+    .essay-prose h2               { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; margin: 2.5rem 0 0.75rem; letter-spacing: -0.3px; color: #1c1917; }
+    .essay-prose h3               { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; margin: 2rem 0 0.6rem; color: #1c1917; }
+    .essay-prose a                { color: #b45309; text-decoration: underline; text-underline-offset: 3px; }
+    .essay-prose strong           { font-weight: 600; color: #1c1917; }
+    .essay-prose em               { font-style: italic; }
+    .essay-prose blockquote       { border-left: 3px solid #e8e3db; padding: 0.25rem 1.25rem; color: #78716c; font-style: italic; margin: 1.75rem 0; }
+    .essay-prose ul, .essay-prose ol { padding-left: 1.5rem; margin-bottom: 1.5rem; }
+    .essay-prose li               { margin-bottom: 0.5rem; }
+    .essay-prose hr               { border: none; border-top: 1px solid #e8e3db; margin: 2.5rem 0; }
+    .essay-prose img              { max-width: 100%; border-radius: 8px; margin: 1.5rem 0; }
 </style>
 {% endblock %}
 
-{% block extra_style %}
-/* ── DETAIL LAYOUT ── */
-.detail-container {
-    max-width: 680px;
-    margin: 0 auto;
-}
-
-/* ── BACK ── */
-.back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--muted);
-    text-decoration: none;
-    margin-bottom: 2.5rem;
-    padding: 0.45rem 0.9rem;
-    border: 1.5px solid var(--border);
-    border-radius: 999px;
-    transition: all 0.15s;
-}
-.back-link:hover {
-    background: var(--text);
-    border-color: var(--text);
-    color: #fff;
-}
-
-/* ── HEADER ── */
-.detail-header { margin-bottom: 2.5rem; }
-
-.detail-pills {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.25rem;
-}
-.pill {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    padding: 0.2rem 0.65rem;
-    border-radius: 4px;
-}
-.pill-cat  { background: var(--cat-bg);  color: var(--cat-text); }
-.pill-lang { background: var(--lang-bg); color: var(--lang-text); }
-.pill-feat { background: var(--feat-bg); color: var(--feat-text); }
-
-.detail-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 4.5vw, 3rem);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -1px;
-    color: var(--text);
-    margin-bottom: 1.5rem;
-}
-
-.detail-meta {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    padding: 1.25rem 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-}
-.detail-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.82rem;
-    color: var(--muted);
-}
-.detail-meta-icon { color: var(--faint); font-style: normal; font-size: 0.9rem; }
-
-/* ── BODY ── */
-.essay-body {
-    font-family: 'Lora', serif;
-    font-size: 1.1rem;
-    line-height: 1.9;
-    color: #2d2521;
-    margin-top: 2.5rem;
-}
-.essay-body p { margin-bottom: 1.5rem; }
-.essay-body h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 2.5rem 0 0.75rem;
-    letter-spacing: -0.3px;
-    color: var(--text);
-}
-.essay-body h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin: 2rem 0 0.6rem;
-    color: var(--text);
-}
-.essay-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-.essay-body strong { font-weight: 600; color: var(--text); }
-.essay-body em { font-style: italic; }
-.essay-body blockquote {
-    border-left: 3px solid var(--border);
-    padding: 0.25rem 1.25rem;
-    color: var(--muted);
-    font-style: italic;
-    margin: 1.75rem 0;
-}
-.essay-body ul, .essay-body ol {
-    padding-left: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-.essay-body li { margin-bottom: 0.5rem; }
-.essay-body hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 2.5rem 0;
-}
-
-/* ── QUOTES ── */
-.quotes-section {
-    margin-top: 3rem;
-    padding-top: 2.5rem;
-    border-top: 1px solid var(--border);
-}
-.quotes-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--faint);
-    margin-bottom: 1.5rem;
-}
-.pull-quote {
-    position: relative;
-    padding: 1.5rem 1.75rem;
-    margin-bottom: 1.25rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
-    border-radius: 0 10px 10px 0;
-}
-.pull-quote::before {
-    content: '\201C';
-    position: absolute;
-    top: -0.25rem;
-    left: 1.25rem;
-    font-family: 'Playfair Display', serif;
-    font-size: 3.5rem;
-    line-height: 1;
-    color: var(--accent);
-    opacity: 0.25;
-}
-.pull-quote p {
-    font-family: 'Lora', serif;
-    font-size: 1.05rem;
-    font-style: italic;
-    line-height: 1.7;
-    color: #3d3530;
-    padding-left: 1.25rem;
-}
-
-/* ── RELATED ── */
-.related-section {
-    margin-top: 3.5rem;
-    padding-top: 2.5rem;
-    border-top: 1px solid var(--border);
-}
-.related-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--faint);
-    margin-bottom: 1.25rem;
-}
-.related-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
-.related-list li {
-    border-bottom: 1px solid var(--border-lt);
-}
-.related-list li:first-child { border-top: 1px solid var(--border-lt); }
-.related-list a {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.9rem 0;
-    color: var(--text);
-    text-decoration: none;
-    font-family: 'Playfair Display', serif;
-    font-size: 1rem;
-    transition: color 0.15s;
-}
-.related-list a span { font-size: 0.9rem; color: var(--faint); transition: color 0.15s, transform 0.15s; display: inline-block; }
-.related-list a:hover { color: var(--accent); }
-.related-list a:hover span { color: var(--accent); transform: translateX(4px); }
-{% endblock %}
-
 {% block content %}
+
+<!-- Reading progress bar -->
 <div id="read-progress"></div>
 
-<div class="detail-container">
+<!-- Constrained detail column -->
+<div class="max-w-[680px] mx-auto">
 
-    <a href="{% url 'essays:home' %}" class="back-link">← Focus Writing</a>
+    <!-- ── BACK LINK ── -->
+    <a href="{% url 'essays:home' %}"
+       class="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 no-underline
+              mb-10 px-4 py-2 border-2 border-stone-200 rounded-full
+              hover:bg-stone-900 hover:border-stone-900 hover:text-white
+              transition-all duration-150">
+        ← Focus Writing
+    </a>
 
-    <header class="detail-header">
-        <div class="detail-pills">
+    <!-- ── HEADER ── -->
+    <header class="mb-10">
+
+        <!-- Pills -->
+        <div class="flex flex-wrap items-center gap-1.5 mb-5">
             {% if essay.category %}
-            <span class="pill pill-cat">{{ essay.category.name }}</span>
+            <span class="text-[0.65rem] font-bold tracking-widest uppercase
+                         bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                {{ essay.category.name }}
+            </span>
             {% endif %}
-            <span class="pill pill-lang">{{ essay.get_language_display }}</span>
+            <span class="text-[0.65rem] font-bold tracking-widest uppercase
+                         bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                {{ essay.get_language_display }}
+            </span>
             {% if essay.featured %}
-            <span class="pill pill-feat">★ Featured</span>
+            <span class="text-[0.65rem] font-bold tracking-widest uppercase
+                         bg-green-50 text-green-700 px-2 py-0.5 rounded">
+                ★ Featured
+            </span>
             {% endif %}
         </div>
 
-        <h1 class="detail-title">{{ essay.title }}</h1>
+        <!-- Title -->
+        <h1 class="font-display font-bold text-stone-900 leading-tight mb-6"
+            style="font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -1px;">
+            {{ essay.title }}
+        </h1>
 
-        <div class="detail-meta">
+        <!-- Meta bar -->
+        <div class="flex flex-wrap items-center gap-6 py-5
+                    border-t border-b border-stone-200">
             {% if essay.created_by %}
-            <span class="detail-meta-item">
-                <i class="detail-meta-icon">✍</i>
+            <span class="flex items-center gap-1.5 text-sm text-stone-500">
+                <i class="not-italic text-stone-400">✍</i>
                 {{ essay.created_by.get_full_name|default:essay.created_by.username }}
             </span>
             {% endif %}
             {% if essay.published_at %}
-            <span class="detail-meta-item">
-                <i class="detail-meta-icon">📅</i>
+            <span class="flex items-center gap-1.5 text-sm text-stone-500">
+                <i class="not-italic text-stone-400">📅</i>
                 {{ essay.published_at|date:"F j, Y" }}
             </span>
             {% endif %}
         </div>
+
     </header>
 
-    <div class="essay-body" id="essay-body">
+    <!-- ── ESSAY BODY ── -->
+    <div id="essay-body"
+         class="essay-prose text-[1.1rem] leading-[1.9] text-stone-800 mt-10">
         {{ essay.content|safe }}
     </div>
 
+    <!-- ── PULL QUOTES ── -->
     {% if essay.quotes.all %}
-    <div class="quotes-section">
-        <p class="quotes-label">Notable Quotes</p>
+    <div class="mt-12 pt-10 border-t border-stone-200">
+        <p class="text-[0.65rem] font-bold tracking-[2px] uppercase text-stone-400 mb-6">
+            Notable Quotes
+        </p>
         {% for q in essay.quotes.all %}
-        <div class="pull-quote">
-            <p>{{ q.quote }}</p>
+        <div class="relative bg-white border border-stone-200 border-l-[4px] border-l-amber-700
+                    rounded-r-xl px-7 py-6 mb-5 overflow-hidden">
+            <!-- Decorative opening quote -->
+            <span class="absolute top-0 left-5 font-display text-6xl leading-none
+                         text-amber-700 opacity-20 select-none" aria-hidden="true">
+                &ldquo;
+            </span>
+            <p class="font-reading text-[1.05rem] italic leading-[1.7] text-stone-700 pl-5">
+                {{ q.quote }}
+            </p>
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
+    <!-- ── RELATED ARTICLES ── -->
     {% if related %}
-    <div class="related-section">
-        <p class="related-label">Continue Reading</p>
-        <ul class="related-list">
+    <div class="mt-14 pt-10 border-t border-stone-200">
+        <p class="text-[0.65rem] font-bold tracking-[2px] uppercase text-stone-400 mb-5">
+            Continue Reading
+        </p>
+        <ul class="list-none p-0 flex flex-col">
             {% for r in related %}
-            <li>
-                <a href="{% url 'essays:detail' r.pk %}">
-                    {{ r.title }}
-                    <span>→</span>
+            <li class="border-b border-stone-100 {% if forloop.first %}border-t{% endif %}">
+                <a href="{% url 'essays:detail' r.pk %}"
+                   class="group flex items-center justify-between py-4 no-underline
+                          text-stone-900 hover:text-amber-700 transition-colors duration-150">
+                    <span class="font-display text-base leading-snug">{{ r.title }}</span>
+                    <span class="text-stone-400 group-hover:text-amber-700
+                                 group-hover:translate-x-1 transition-all duration-150
+                                 inline-block flex-shrink-0 ml-4">→</span>
                 </a>
             </li>
             {% endfor %}
@@ -288,15 +150,20 @@
 
 </div>
 
+<!-- ── READING PROGRESS SCRIPT ── -->
 <script>
-    const bar  = document.getElementById('read-progress');
-    const body = document.getElementById('essay-body');
-    window.addEventListener('scroll', () => {
-        const rect   = body.getBoundingClientRect();
-        const total  = body.offsetHeight - window.innerHeight;
-        const scrolled = Math.max(0, -rect.top);
-        const pct    = Math.min(100, (scrolled / total) * 100);
-        bar.style.width = pct + '%';
-    }, { passive: true });
+    (function () {
+        const bar  = document.getElementById('read-progress');
+        const body = document.getElementById('essay-body');
+        if (!bar || !body) return;
+        window.addEventListener('scroll', function () {
+            const top     = body.getBoundingClientRect().top;
+            const total   = body.offsetHeight - window.innerHeight;
+            const scrolled = Math.max(0, -top);
+            const pct      = total > 0 ? Math.min(100, (scrolled / total) * 100) : 0;
+            bar.style.width = pct + '%';
+        }, { passive: true });
+    })();
 </script>
+
 {% endblock %}
