@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}{{ essay.title }} — Baker Vai{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── PROGRESS BAR ── */
+    #read-progress {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        height: 3px;
+        width: 0%;
+        background: var(--accent);
+        z-index: 300;
+        transition: width 0.1s linear;
+    }
+</style>
+{% endblock %}
+
+{% block extra_style %}
+/* ── DETAIL LAYOUT ── */
+.detail-container {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* ── BACK ── */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    margin-bottom: 2.5rem;
+    padding: 0.45rem 0.9rem;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    transition: all 0.15s;
+}
+.back-link:hover {
+    background: var(--text);
+    border-color: var(--text);
+    color: #fff;
+}
+
+/* ── HEADER ── */
+.detail-header { margin-bottom: 2.5rem; }
+
+.detail-pills {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+.pill {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 4px;
+}
+.pill-cat  { background: var(--cat-bg);  color: var(--cat-text); }
+.pill-lang { background: var(--lang-bg); color: var(--lang-text); }
+.pill-feat { background: var(--feat-bg); color: var(--feat-text); }
+
+.detail-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+}
+
+.detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+.detail-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+.detail-meta-icon { color: var(--faint); font-style: normal; font-size: 0.9rem; }
+
+/* ── BODY ── */
+.essay-body {
+    font-family: 'Lora', serif;
+    font-size: 1.1rem;
+    line-height: 1.9;
+    color: #2d2521;
+    margin-top: 2.5rem;
+}
+.essay-body p { margin-bottom: 1.5rem; }
+.essay-body h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    letter-spacing: -0.3px;
+    color: var(--text);
+}
+.essay-body h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 2rem 0 0.6rem;
+    color: var(--text);
+}
+.essay-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.essay-body strong { font-weight: 600; color: var(--text); }
+.essay-body em { font-style: italic; }
+.essay-body blockquote {
+    border-left: 3px solid var(--border);
+    padding: 0.25rem 1.25rem;
+    color: var(--muted);
+    font-style: italic;
+    margin: 1.75rem 0;
+}
+.essay-body ul, .essay-body ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.essay-body li { margin-bottom: 0.5rem; }
+.essay-body hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+}
+
+/* ── QUOTES ── */
+.quotes-section {
+    margin-top: 3rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
+}
+.quotes-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 1.5rem;
+}
+.pull-quote {
+    position: relative;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+}
+.pull-quote::before {
+    content: '\201C';
+    position: absolute;
+    top: -0.25rem;
+    left: 1.25rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    line-height: 1;
+    color: var(--accent);
+    opacity: 0.25;
+}
+.pull-quote p {
+    font-family: 'Lora', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.7;
+    color: #3d3530;
+    padding-left: 1.25rem;
+}
+
+/* ── RELATED ── */
+.related-section {
+    margin-top: 3.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
+}
+.related-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 1.25rem;
+}
+.related-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
+.related-list li {
+    border-bottom: 1px solid var(--border-lt);
+}
+.related-list li:first-child { border-top: 1px solid var(--border-lt); }
+.related-list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 0;
+    color: var(--text);
+    text-decoration: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    transition: color 0.15s;
+}
+.related-list a span { font-size: 0.9rem; color: var(--faint); transition: color 0.15s, transform 0.15s; display: inline-block; }
+.related-list a:hover { color: var(--accent); }
+.related-list a:hover span { color: var(--accent); transform: translateX(4px); }
+{% endblock %}
+
+{% block content %}
+<div id="read-progress"></div>
+
+<div class="detail-container">
+
+    <a href="{% url 'essays:home' %}" class="back-link">← Focus Writing</a>
+
+    <header class="detail-header">
+        <div class="detail-pills">
+            {% if essay.category %}
+            <span class="pill pill-cat">{{ essay.category.name }}</span>
+            {% endif %}
+            <span class="pill pill-lang">{{ essay.get_language_display }}</span>
+            {% if essay.featured %}
+            <span class="pill pill-feat">★ Featured</span>
+            {% endif %}
+        </div>
+
+        <h1 class="detail-title">{{ essay.title }}</h1>
+
+        <div class="detail-meta">
+            {% if essay.created_by %}
+            <span class="detail-meta-item">
+                <i class="detail-meta-icon">✍</i>
+                {{ essay.created_by.get_full_name|default:essay.created_by.username }}
+            </span>
+            {% endif %}
+            {% if essay.published_at %}
+            <span class="detail-meta-item">
+                <i class="detail-meta-icon">📅</i>
+                {{ essay.published_at|date:"F j, Y" }}
+            </span>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="essay-body" id="essay-body">
+        {{ essay.content|safe }}
+    </div>
+
+    {% if essay.quotes.all %}
+    <div class="quotes-section">
+        <p class="quotes-label">Notable Quotes</p>
+        {% for q in essay.quotes.all %}
+        <div class="pull-quote">
+            <p>{{ q.quote }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if related %}
+    <div class="related-section">
+        <p class="related-label">Continue Reading</p>
+        <ul class="related-list">
+            {% for r in related %}
+            <li>
+                <a href="{% url 'essays:detail' r.pk %}">
+                    {{ r.title }}
+                    <span>→</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    const bar  = document.getElementById('read-progress');
+    const body = document.getElementById('essay-body');
+    window.addEventListener('scroll', () => {
+        const rect   = body.getBoundingClientRect();
+        const total  = body.offsetHeight - window.innerHeight;
+        const scrolled = Math.max(0, -rect.top);
+        const pct    = Math.min(100, (scrolled / total) * 100);
+        bar.style.width = pct + '%';
+    }, { passive: true });
+</script>
+{% endblock %}
