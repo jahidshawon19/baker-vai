@@ -24,8 +24,8 @@ ALLOWED_HOSTS = os.environ.get(
     'localhost,127.0.0.1'
 ).split(',')
 
-# Always allow Vercel preview and production domains
-ALLOWED_HOSTS += ['.vercel.app']
+# Allow PythonAnywhere domains
+ALLOWED_HOSTS += ['.pythonanywhere.com']
 
 # ── APPS ────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -74,12 +74,24 @@ WSGI_APPLICATION = 'baker_vai.wsgi.application'
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
-    # Production: Neon / Supabase / any Postgres
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=600,
         )
+    }
+elif os.environ.get('DB_NAME'):
+    # PythonAnywhere MySQL
+    DATABASES = {
+        'default': {
+            'ENGINE':   'django.db.backends.mysql',
+            'NAME':     os.environ.get('DB_NAME'),
+            'USER':     os.environ.get('DB_USER'),
+            'PASSWORD': os.environ.get('DB_PASSWORD'),
+            'HOST':     os.environ.get('DB_HOST'),
+            'PORT':     '3306',
+            'OPTIONS':  {'charset': 'utf8mb4'},
+        }
     }
 else:
     # Local development: SQLite
