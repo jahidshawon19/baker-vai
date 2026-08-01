@@ -28,17 +28,12 @@ class Essay(models.Model):
         PUBLISHED = 'published', 'Published'
         ARCHIVED = 'archived', 'Archived'
 
-    class Language(models.TextChoices):
-        ENGLISH = 'en', 'English'
-        BENGALI = 'bn', 'Bengali'
-
     title = models.CharField(max_length=300)
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='essays'
     )
     content = RichTextField()
-    language = models.CharField(max_length=10, choices=Language.choices, default=Language.ENGLISH)
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PUBLISHED)
     featured = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name='essays'

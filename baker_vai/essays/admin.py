@@ -17,15 +17,15 @@ class EssayQuoteInline(admin.TabularInline):
 
 @admin.register(Essay)
 class EssayAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'language', 'status', 'featured', 'created_at')
-    list_filter = ('status', 'language', 'featured', 'category')
+    list_display = ('title', 'category', 'status', 'featured', 'created_at')
+    list_filter = ('status', 'featured', 'category')
     search_fields = ('title',)
     readonly_fields = ('created_at', 'updated_at')
     inlines = [EssayQuoteInline]
     fieldsets = (
         (None, {'fields': ('title', 'category')}),
         ('Content', {'fields': ('content',)}),
-        ('Publishing', {'fields': ('language', 'status', 'featured', 'published_at', 'created_by')}),
+        ('Publishing', {'fields': ('status', 'featured', 'published_at', 'created_by')}),
         ('Timestamps', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
     )
 

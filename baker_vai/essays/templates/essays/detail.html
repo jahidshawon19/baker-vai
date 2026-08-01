@@ -60,11 +60,7 @@
                 {{ essay.category.name }}
             </span>
             {% endif %}
-            <span class="text-[0.65rem] font-bold tracking-widest uppercase
-                         bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                {{ essay.get_language_display }}
-            </span>
-            {% if essay.featured %}
+{% if essay.featured %}
             <span class="text-[0.65rem] font-bold tracking-widest uppercase
                          bg-green-50 text-green-700 px-2 py-0.5 rounded">
                 ★ Featured
