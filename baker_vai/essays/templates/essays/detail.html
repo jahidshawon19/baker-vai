@@ -3,10 +3,6 @@
 {% block title %}{{ essay.title }} — Baker Vai{% endblock %}
 
 {% block extra_head %}
-<!-- html2pdf.js for client-side PDF generation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-<!-- Reading progress bar sits just below the sticky nav (top-16 = 64px) -->
 <style>
     #read-progress {
         position: fixed;
@@ -14,12 +10,12 @@
         left: 0;
         height: 3px;
         width: 0%;
-        background-color: #b45309; /* amber-700 */
+        background-color: #b45309;
         z-index: 300;
         transition: width 0.1s linear;
     }
 
-    /* Rich-text body — CKEditor HTML needs real CSS prose rules */
+    /* Rich-text body */
     .essay-prose { font-family: 'Lora', Georgia, serif; }
     .essay-prose p                { margin-bottom: 1.5rem; }
     .essay-prose h2               { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; margin: 2.5rem 0 0.75rem; letter-spacing: -0.3px; color: #1c1917; }
@@ -32,15 +28,21 @@
     .essay-prose li               { margin-bottom: 0.5rem; }
     .essay-prose hr               { border: none; border-top: 1px solid #e8e3db; margin: 2.5rem 0; }
     .essay-prose img              { max-width: 100%; border-radius: 8px; margin: 1.5rem 0; }
+
+    /* Disable text selection on essay content */
+    .essay-prose {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Reading progress bar -->
 <div id="read-progress"></div>
 
-<!-- Constrained detail column -->
 <div class="max-w-[680px] mx-auto">
 
     <!-- ── BACK LINK ── -->
@@ -63,7 +65,7 @@
                 {{ essay.category.name }}
             </span>
             {% endif %}
-{% if essay.featured %}
+            {% if essay.featured %}
             <span class="text-[0.65rem] font-bold tracking-widest uppercase
                          bg-green-50 text-green-700 px-2 py-0.5 rounded">
                 ★ Featured
@@ -78,36 +80,20 @@
         </h1>
 
         <!-- Meta bar -->
-        <div class="flex flex-wrap items-center justify-between gap-4 py-5
+        <div class="flex flex-wrap items-center gap-6 py-5
                     border-t border-b border-stone-200">
-            <div class="flex flex-wrap items-center gap-6">
-                {% if essay.created_by %}
-                <span class="flex items-center gap-1.5 text-sm text-stone-500">
-                    <i class="not-italic text-stone-400">✍</i>
-                    {{ essay.created_by.get_full_name|default:essay.created_by.username }}
-                </span>
-                {% endif %}
-                {% if essay.published_at %}
-                <span class="flex items-center gap-1.5 text-sm text-stone-500">
-                    <i class="not-italic text-stone-400">📅</i>
-                    {{ essay.published_at|date:"F j, Y" }}
-                </span>
-                {% endif %}
-            </div>
-
-            <!-- PDF Download button -->
-            <button id="download-pdf"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold
-                           bg-amber-700 hover:bg-amber-800 text-white rounded-full
-                           transition-colors duration-150">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2
-                             M7 10l5 5 5-5M12 15V3"/>
-                </svg>
-                Download PDF
-            </button>
+            {% if essay.created_by %}
+            <span class="flex items-center gap-1.5 text-sm text-stone-500">
+                <i class="not-italic text-stone-400">✍</i>
+                {{ essay.created_by.get_full_name|default:essay.created_by.username }}
+            </span>
+            {% endif %}
+            {% if essay.published_at %}
+            <span class="flex items-center gap-1.5 text-sm text-stone-500">
+                <i class="not-italic text-stone-400">📅</i>
+                {{ essay.published_at|date:"F j, Y" }}
+            </span>
+            {% endif %}
         </div>
 
     </header>
@@ -127,7 +113,6 @@
         {% for q in essay.quotes.all %}
         <div class="relative bg-white border border-stone-200 border-l-[4px] border-l-amber-700
                     rounded-r-xl px-7 py-6 mb-5 overflow-hidden">
-            <!-- Decorative opening quote -->
             <span class="absolute top-0 left-5 font-display text-6xl leading-none
                          text-amber-700 opacity-20 select-none" aria-hidden="true">
                 &ldquo;
@@ -165,99 +150,21 @@
 
 </div>
 
-<!-- ── PDF CONTENT (off-screen, rendered for html2pdf) ── -->
-<div id="pdf-content"
-     style="position:absolute; left:-9999px; top:0; width:794px; padding:56px 64px;
-            background:#ffffff; color:#1c1917; font-size:13px; line-height:1.85;">
-
-    <!-- Header -->
-    <div style="border-bottom:2px solid #b45309; padding-bottom:20px; margin-bottom:28px;">
-        {% if essay.category %}
-        <p style="font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
-                  color:#b45309; margin:0 0 10px;">{{ essay.category.name }}</p>
-        {% endif %}
-        <h1 style="font-size:28px; font-weight:700; line-height:1.2; margin:0 0 16px;
-                   letter-spacing:-0.5px;">{{ essay.title }}</h1>
-        <div style="display:flex; gap:24px; font-size:11px; color:#78716c;">
-            {% if essay.created_by %}
-            <span>✍ {{ essay.created_by.get_full_name|default:essay.created_by.username }}</span>
-            {% endif %}
-            {% if essay.published_at %}
-            <span>📅 {{ essay.published_at|date:"F j, Y" }}</span>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Body -->
-    <div style="font-size:13px; line-height:1.85; color:#2d2521;">
-        {{ essay.content|safe }}
-    </div>
-
-    {% if essay.quotes.all %}
-    <!-- Quotes -->
-    <div style="margin-top:36px; border-top:1px solid #e8e3db; padding-top:28px;">
-        <p style="font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
-                  color:#a8a29e; margin-bottom:16px;">Notable Quotes</p>
-        {% for q in essay.quotes.all %}
-        <div style="border-left:4px solid #b45309; padding:12px 20px; margin-bottom:14px;
-                    background:#fef3c7; border-radius:0 8px 8px 0; font-style:italic;
-                    color:#3d3530; font-size:12px;">
-            {{ q.quote }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- Footer -->
-    <div style="margin-top:48px; border-top:1px solid #e8e3db; padding-top:16px;
-                font-size:10px; color:#a8a29e; display:flex; justify-content:space-between;">
-        <span>বাকের ভাই — Focus Writing</span>
-        <span>baker-xydi.onrender.com</span>
-    </div>
-</div>
-
-<!-- ── READING PROGRESS SCRIPT ── -->
+<!-- ── SCRIPTS ── -->
 <script>
+    // Reading progress bar
     (function () {
         const bar  = document.getElementById('read-progress');
         const body = document.getElementById('essay-body');
         if (!bar || !body) return;
         window.addEventListener('scroll', function () {
-            const top     = body.getBoundingClientRect().top;
-            const total   = body.offsetHeight - window.innerHeight;
+            const top      = body.getBoundingClientRect().top;
+            const total    = body.offsetHeight - window.innerHeight;
             const scrolled = Math.max(0, -top);
             const pct      = total > 0 ? Math.min(100, (scrolled / total) * 100) : 0;
             bar.style.width = pct + '%';
         }, { passive: true });
     })();
-</script>
-
-<!-- ── PDF DOWNLOAD SCRIPT ── -->
-<script>
-    document.getElementById('download-pdf').addEventListener('click', function () {
-        const btn     = this;
-        const content = document.getElementById('pdf-content');
-
-        btn.disabled    = true;
-        btn.textContent = 'Generating…';
-
-        const opt = {
-            margin:     [0, 0, 0, 0],
-            filename:   '{{ essay.title|slugify }}.pdf',
-            image:      { type: 'jpeg', quality: 0.97 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF:      { unit: 'px', format: 'a4', orientation: 'portrait', hotfixes: ['px_scaling'] },
-        };
-
-        html2pdf()
-            .set(opt)
-            .from(content)
-            .save()
-            .then(function () {
-                btn.disabled    = false;
-                btn.innerHTML   = '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Download PDF';
-            });
-    });
 </script>
 
 {% endblock %}
